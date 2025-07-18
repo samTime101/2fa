@@ -39,65 +39,68 @@ def is_valid_date(date_str: str) -> bool:
 
 
 
-
+username = '2fa'
+password = '2fa'
 def handle_user_connection(connection: socket.socket, address: str) -> None:
-    while True:
-        try:
-            msg = connection.recv(1024)
+    try:
+        # SERVER SENDS MESSAGE JULY 17
+        connection.send(b"USERNAME >>:")
+        user_username = connection.recv(1024).decode().strip()
+        connection.send(b"PASSOWORD >>:")
+        user_password = connection.recv(1024).decode().strip()
+        if user_password != username and user_password !=  password or not user_password or not user_password:
+            connection.send(b"INVALID LOGIN")
+            remove_connection(connection)
+            return
+        connection.send(b"WELCOME ADMIN\n")
 
-            if msg:
-                decoded = msg.decode().strip()
+        while True:
+                msg = connection.recv(1024)
 
-                print(f'{address[0]}:{address[1]} - {decoded}')
-                if is_valid_date(decoded):
-                    # readfile(decoded)
-                    connection.send(f"\n-----\n[*] FROM 2FA \n{readfile(decoded)}\n-----\n".encode())
-                elif decoded == '2fa':
-                    connection.send(f"\n-----\n[*] FROM 2FA \n{readfile(decoded)}\n-----\n".encode())
-                elif decoded == 'help':
-                    connection.send("FROM 2FA > made by 2FA 2025\n".encode())
+                if msg:
+                    decoded = msg.decode().strip()
+
+                    print(f'{address[0]}:{address[1]} - {decoded}')
+                    if is_valid_date(decoded):
+                        # readfile(decoded)
+                        connection.send(f"\n-----\n[*] FROM 2FA \n{readfile(decoded)}\n-----\n".encode())
+                    elif decoded == '2fa':
+                        connection.send(f"\n-----\n[*] FROM 2FA \n{readfile(decoded)}\n-----\n".encode())
+                    elif decoded == 'help':
+                        connection.send("FROM 2FA > made by 2FA 2025\n".encode())
+                    else:
+                        connection.send("Unknown command. Exiting.".encode())
+                        remove_connection(connection)
+                        break
+
+                    #JULY 17 SAMIP REGMI EDITED ---- 
+                    # Broadcast message to other users (optional)
+                    # msg_to_send = f'From {address[0]}:{address[1]} - {decoded}'
+                    # broadcast(msg_to_send, connection)
+
                 else:
-                    connection.send("Unknown command. Exiting.".encode())
                     remove_connection(connection)
                     break
 
-                #JULY 17 SAMIP REGMI EDITED ---- 
-                # Broadcast message to other users (optional)
-                # msg_to_send = f'From {address[0]}:{address[1]} - {decoded}'
-                # broadcast(msg_to_send, connection)
-
-            else:
-                remove_connection(connection)
-                break
-
-        except Exception as e:
-            print(f'Error to handle user connection: {e}')
-            remove_connection(connection)
-            break
+    except Exception as e:
+        print(f'Error to handle user connection: {e}')
+        remove_connection(connection)
+        return
 
 
 
 def remove_connection(conn: socket.socket) -> None:
-    '''
-        Remove specified connection from connections list
-    '''
 
-    # Check if connection exists on connections list
     if conn in connections:
         conn.close()
         connections.remove(conn)
 
 
 def server() -> None:
-    '''
-        Main process that receive client's connections and start a new thread
-        to handle their messages
-    '''
 
     LISTENING_PORT = 12000
     
     try:
-        # Create server and specifying that it can only handle 4 connections by time!
         socket_instance = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         socket_instance.bind(('', LISTENING_PORT))
         socket_instance.listen(4)
@@ -106,18 +109,14 @@ def server() -> None:
         
         while True:
 
-            # Accept client connection
             socket_connection, address = socket_instance.accept()
-            # Add client connection to connections list
             connections.append(socket_connection)
-            # Start a new thread to handle client connection and receive it's messages
-            # in order to send to others connections
+
             threading.Thread(target=handle_user_connection, args=[socket_connection, address]).start()
 
     except Exception as e:
         print(f'An error has occurred when instancing socket: {e}')
     finally:
-        # In case of any problem we clean all connections and close the server connection
         if len(connections) > 0:
             for conn in connections:
                 remove_connection(conn)
