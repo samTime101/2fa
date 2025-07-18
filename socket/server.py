@@ -2,7 +2,19 @@
 
 # JULY 17 CHANGED BY SAMIP REGMI samTime101
 
+# TODO: JULY 17
 
+# connection.send(b"")
+# connection.recv(somebytes).decode().strip
+
+# check credentials 
+# if not ok
+# conn..send('invalid')
+# remove_connection(conn)
+
+# else
+# succkess
+# go to while loop
 
 
 import socket, threading
@@ -23,6 +35,10 @@ def is_valid_date(date_str: str) -> bool:
         return True
     except ValueError:
         return False
+
+
+
+
 
 def handle_user_connection(connection: socket.socket, address: str) -> None:
     while True:
