@@ -14,7 +14,7 @@
     <div id="login-section" class="row justify-content-center">
       <div class="col-12 col-md-8 col-lg-6">
         <div class="card bg-gray-900 border-0 shadow-lg p-4 rounded-4">
-          <h1 class="text-white fw-bold text-center mb-4">Login to Play Your Frequency</h1>
+          <h1 class="text-white fw-bold text-center mb-4">2FA Login</h1>
           <input type="text" id="name" class="form-control mb-3" placeholder="Enter your name">
           <input type="password" id="secretCode" class="form-control mb-3" placeholder="Enter secret code">
           <button class="btn btn-success w-100 mb-3" onclick="checkSecretCode()">LOGIN</button>
@@ -94,6 +94,15 @@
                       document.getElementById("login-section").style.class = "justify-content-center";
 
         }
+// check for admin
+        if (localStorage.getItem("user")) {
+          const user = JSON.parse(localStorage.getItem("user"));
+          if (user.name === "admin" && user.login) {
+            window.location.href = "./csv-to-html-table/index.html";
+          }
+        }
+
+
       } catch (error) {
         console.error('Error loading user data:', error);
       }
@@ -103,7 +112,20 @@
       const rawName = document.getElementById("name").value;
       const secretCode = document.getElementById("secretCode").value;
       const name = rawName.split(' ').join('').toLowerCase();
+// for admin login
+      if (name === "admin" && secretCode === "admin123") {
+        // render the ok.html page and save the user in localStorage
+        // remove the user from   localStorage if it exists
+        localStorage.removeItem("user");
+        currentUser = { name: "admin", login: true}
+        localStorage.setItem("user", JSON.stringify(currentUser));
+        window.location.href = "./csv-to-html-table/index.html";
+        return;
 
+        
+      }
+
+// JULY 19 - for regular users
       const user = users.find(u => u.name === name && u.secret === secretCode);
       if (user) {
         localStorage.setItem("user", JSON.stringify(user));
@@ -113,6 +135,9 @@
         alert("Invalid name or secret code!");
       }
     }
+
+
+
 // function showMainUI() {
 //   document.getElementById("login-section").style.display = "none";
 //   document.getElementById("main-section").style.display = "block";
@@ -142,6 +167,7 @@
 //     $('#table-container table').DataTable({ paging: false });
 //   });
 // }
+
 
 function showMainUI() {
   document.getElementById("login-section").style.display = "none";
@@ -195,9 +221,12 @@ function showMainUI() {
 
     document.getElementById("table-container").innerHTML = htmlTable;
 
-    $('#table-container table').DataTable({
-      paging: false
-    });
+$('#table-container table').DataTable({
+  paging: false,
+  searching: false,
+  info: true,
+  ordering: true
+});
   });
 }
 
@@ -219,14 +248,14 @@ function showMainUI() {
     // }
 
 
-//LOGOUT GARDA ITS GOING TO LEFT ----------
+//JUly 19
     function logout() {
       localStorage.removeItem("user");
       currentUser = null;
-
       document.getElementById("main-section").style.display = "none";
-     document.getElementById("login-section").style.display = "block";
-//document.getElementById("login-section").style.class = "justify-content-center";
+      // Reset the display property without affecting the Bootstrap centering classes
+      document.getElementById("login-section").style.display = "";
+      document.getElementById("login-section").className = "row justify-content-center";
     }
 
     function format_link(link) {
