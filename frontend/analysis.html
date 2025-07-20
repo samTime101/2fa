@@ -39,39 +39,7 @@
   </footer>
   <script>
 
-document.getElementById('submit').addEventListener('click', async (event) => {
-    event.preventDefault();
-    const prompt = document.getElementById('prompt').value;
-    const responseDiv = document.getElementById('response');
-
-    if (!prompt) {
-        responseDiv.innerHTML = '<div class="alert alert-warning">Please enter a prompt.</div>';
-        return;
-    }
-
-    responseDiv.innerHTML = '<div class="text-center"><div class="spinner-border" role="status"></div> <span></span></div>';
-
-    try {
-        const response = await fetch('http://127.0.0.1:5700', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt })
-        });
-
-        const data = await response.json();
-        const raw = data.response || 'No response from server.';
-        
-        if (raw.startsWith('data:image/png;base64,')) {
-            responseDiv.innerHTML = `<img src="${raw}" alt="Generated Plot" class="img-fluid">`;
-        } else {
-            responseDiv.innerHTML = `<p>${raw}</p>`;
-        }
-
-    } catch (error) {
-        console.error('Error:', error);
-        responseDiv.innerHTML = '<div class="alert alert-danger">An error occurred. Please try again.</div>';
-    }
-});
+// removed jsfor github
   </script>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
