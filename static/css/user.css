@@ -1,0 +1,40 @@
+    #table-container table {
+    width: 100% !important;
+  }
+@keyframes gradient-move {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+.animated-gradient {
+  background: linear-gradient(to right, rgb(0, 0, 0), white, rgb(0, 0, 0), white);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradient-move 3s ease-in-out infinite;
+}
+
+    /* body, footer {
+    background: linear-gradient(to right, #212529, #212530, #131c21, #212531, #131c21);
+    background-size: 200% 100%;
+    animation: gradient-move 8s ease-in-out infinite;
+  }
+
+  @keyframes gradient-move {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  } */

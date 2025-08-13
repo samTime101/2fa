@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>info</title>
+</head>
+
+<body>
+  
+    <header>
+        <h1>
+            Introduction & Manual
+        </h1>
+    </header>
+<h3>Code Running Instructions</h3>
+<ol>
+  <li>
+    Start SQL:
+    <pre><code>startsql
+sql
+use 2fa;
+</code></pre>
+  </li>
+  <li>
+    Start server.py:
+    <pre><code>python3 server.py
+</code></pre>
+  </li>
+  <li>
+    Start ngrok:
+    <pre><code>ngrok tcp 12000
+</code></pre>
+  </li>
+  <li>
+    Change TCP URL in <code>loginmanager.py</code> and run:
+    <pre><code>python3 loginmanager.py
+cloudflared --url http://localhost:5800
+</code></pre>
+  </li>
+  <li>
+    Change the URL in <code>index.html</code>:
+    <pre><code>href = "&lt;cloudflared url&gt;"
+</code></pre>
+  </li>
+</ol>
+
+    <main>
+        <p>
+            All required python3 files
+        </p>
+<ul>
+  <li>app.py
+    <ul>
+      <li>Removed redirect clutters and minified the user interface[Recently Added]</li>
+      <li>Flask backend</li>
+      <li>renders <strong>templates/index.html</strong></li>
+      <li>has Face Detection + Frequency Detection</li>
+    </ul>
+  </li>
+    <li>loginmanager.py [Recently added]
+    <ul>
+      <li>Flask backend</li>
+      <li>renders <strong>renders the pages through templates/</strong></li>
+      <li>session based login</li>
+      <li>role based session , 'admin' and normal user through 'user.json'</li>
+    </ul>
+  </li>
+    <li>ReportWrite.py
+    <ul>
+      <li>writes PNG image to those who have done attendence using server.py [Recently added]</li>
+      <li>writes on <strong>2fa.csv</strong></li>
+      <li>writes on<strong>{Date}.csv</strong></li>
+      <li>Saves (csv) attendence data to Remote save</li>
+      <li>Saves Image data to Remote save</li>
+      <li>Saves attendence data to MySQL</li>
+    </ul>
+  </li>
+      <li><s>graph.py (DEPRECATED)</s>
+    <ul>
+      <li>uses 2fa.csv and generates <strong>plot.png</strong></li>
+    </ul>
+  </li>
+  <li><s>API.py (DEPRECATED)</s>
+    <ul>
+      <li>Flask backend</li>
+    <li>gets POST request on /create</li>
+    <li>registers new user taking USERNAME , SECRET CODE and IMAGE</li>
+    <li>appends on <strong>user.json</strong></li>
+    </ul>
+  </li>
+</ul>
+<ul>
+  <li><s>Socket.py</s> RENAMED TO <strong>server.py</strong>
+    <ul>
+      <li>Can be accessed with any POSIX-compliant terminal
+        <ul>
+          <li>telnet &lt;tcp address&gt; &lt;tcp port&gt;</li>
+        </ul>
+      </li>
+      <li>Authentication Added
+        <ul>
+          <li>Requires username and secret code to login user</li>
+        </ul>
+      </li>
+      <li>help
+        <ul>
+          <li>Triggers help section</li>
+        </ul>
+      </li>
+      <li>&lt;file&gt;
+        <ul>
+          <li>Available 2FA or &lt;date&gt;</li>
+        </ul>
+      </li>
+      <li>ask
+        <ul>
+          <li>Calls Gemini API which has access to <code>2fa.csv</code> and <code>user.json</code>, and answers related queries</li>
+        </ul>
+      </li>
+      <li>mark
+        <ul>
+          <li>Marks attendance to specified user using <code>user['email']</code> and sends an OTP code</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+<hr>
+    </main>
+    <footer>
+        <p>&copy; 2FA 2025</p>
+    </footer>
+</body>
+
+</html>

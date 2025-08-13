@@ -1,0 +1,33 @@
+
+/* credits https://codepen.io/meemkhan/pen/gVgPNg */
+.fingerprint.scanning {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+.fingerprint.scanning::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%; 
+  height: 3px;
+  background-image: linear-gradient(to bottom,
+    rgba(170, 184, 190, 0),
+    rgba(170, 184, 190, .8));
+  /* animation: scanning 0.8s linear infinite; */
+  box-shadow: 0 0 10px rgba(170, 184, 190, 0.8);
+animation: scanning 2s ease-in-out infinite alternate;
+
+} 
+
+
+@keyframes scanning {
+  0% {
+    top: 0;
+  }
+  100% {
+    top: 100%;
+    transform: translateY(-100%);
+  }
+}

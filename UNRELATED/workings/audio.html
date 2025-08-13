@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Frequency-Based Attendance System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f4f4f9;
+    }
+    h1 {
+      color: #333;
+    }
+    .button-container {
+      margin-top: 20px;
+    }
+    .btn {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    .btn:hover {
+      background-color: #45a049;
+    }
+    .radio-group {
+      margin-top: 20px;
+    }
+    .radio-group label {
+      font-size: 18px;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Frequency-Based Attendance System</h1>
+  <p>Select a user below to generate and play their frequency tone.</p>
+  <div class="radio-group">
+    <input type="radio" id="samip" name="user" value="SamipRegmi">
+    <label for="samip">SamipRegmi</label><br>
+    <input type="radio" id="srijan" name="user" value="SrijanRegmi">
+    <label for="srijan">SrijanRegmi</label><br>
+    <input type="radio" id="nayan" name="user" value="NayanNembang">
+    <label for="nayan">NayanNembang</label><br>
+  </div>
+  <div class="button-container">
+    <button class="btn" onclick="generateAndPlayTone()">Play Selected User Frequency</button>
+  </div>
+
+
+  <script>
+    const users = {
+      "name": ["SamipRegmi", "SrijanRegmi", "NayanNembang"],
+      "frequency": [400, 420, 440],
+      "secret": ["np02cs4a240105", "np02cs4a240103", "np02cs4a240109"]
+    };
+
+    let audioCtx = null;
+
+    function generateDynamicFrequency(userIndex) {
+        const baseFreq = users.frequency[userIndex];
+        const secretKey = users.secret[userIndex];
+
+        const now = new Date();
+        const minute = now.getUTCMinutes();
+
+        now.setUTCSeconds(0, 0);
+        const timestampStr = now.toISOString().split('.')[0] + 'Z';
+
+        const combo = `${secretKey}-${timestampStr}`;
+        sha256(combo).then(hashDigest => {
+            const hashVal = parseInt(hashDigest.slice(-4), 16);
+            const bias = hashVal % 20;
+            const finalFrequency = baseFreq + bias + minute;
+
+            // console.log(`[${users.name[userIndex]}] Base: ${baseFreq} Hz, Bias: ${bias} Hz, Minute: ${minute}, Final: ${finalFrequency.toFixed(2)} Hz`);
+
+            playTone(finalFrequency);
+        });
+    }
+
+    function playTone(frequency) {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume().then(() => {
+          console.log('AudioContext resumed successfully');
+          startOscillator(frequency);
+        }).catch(e => {
+          console.error('Error resuming AudioContext:', e);
+        });
+      } else {
+        startOscillator(frequency);
+      }
+    }
+
+    function startOscillator(frequency) {
+      const sampleRate = 44100;
+      const duration = 2.0;
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+      gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+
+      oscillator.start();
+      oscillator.stop(audioCtx.currentTime + duration);
+
+      oscillator.onended = () => {
+        oscillator.disconnect();
+        gainNode.disconnect();
+      };
+    }
+
+    async function sha256(str) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(str);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+      return Array.from(new Uint8Array(hashBuffer))
+        .map(b => b.toString(16).padStart(2, "0"))
+        .join("");
+    }
+
+    function generateAndPlayTone() {
+      const selectedUser = document.querySelector('input[name="user"]:checked');
+      if (!selectedUser) {
+        alert("Please select a user.");
+        return;
+      }
+
+      const userIndex = users.name.indexOf(selectedUser.value);
+      if (userIndex === -1) {
+        alert("User not found.");
+        return;
+      }
+
+      generateDynamicFrequency(userIndex);
+    }
+  </script>
+  
+</body>
+</html>

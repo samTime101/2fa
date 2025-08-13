@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f4f4f9;
+    }
+    h1 {
+      color: #333;
+    }
+    .button-container {
+      margin-top: 20px;
+    }
+    .btn {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    .btn:hover {
+      background-color: #45a049;
+    }
+    .radio-group {
+      margin-top: 20px;
+    }
+    .radio-group label {
+      font-size: 18px;
+      margin-right: 10px;
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+
+</head>
+<body>
+
+    <p>PLAY YOUR FREQUENCY</p>
+    <p>DONT HAVE ID ?</p>
+    <a href="./api.html">create here</a>
+    <p>copyright samip regmi 2025</p>
+    <input type="text" id="name" placeholder="Enter your name" />
+    <input type="password" id="secretCode" placeholder="Enter secret code" />
+    <button class="btn" onclick="checkSecretCode()">PLAY</button>
+
+
+<h2>Attendance Table</h2>
+<table id="csv-table" class="display" style="width:100%"></table>
+
+  <script src="https://cdn.jsdelivr.net/npm/js-sha256@0.9.0/build/sha256.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/tone@next/build/Tone.js"></script>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+
+  <script >
+  let users = [];
+
+  async function loadUsersAndCheckLocal() {
+    try {
+      const response = await fetch('user.json');
+      users = await response.json();
+      console.log("Users loaded:", users);
+
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        users.forEach(element => {
+
+          if (element.name === user.name && element.secret === user.secret) {
+            console.log("User found in local storage:", element);
+            userExists = true;
+          }
+        });
+        // const userExists = users.some(u => u.name === user.name && u.secret === user.secret);
+        console.log("User exists:", userExists);
+        // alert(userExists);
+        if (userExists) {
+          document.getElementById("name").value = user.name;
+          document.getElementById("secretCode").value = user.secret;
+        }
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    }
+  }
+   
+    function checkSecretCode(){
+        const name = document.getElementById("name").value;
+        const secretCode = document.getElementById("secretCode").value;
+    
+
+        
+        const user = users.find(u => u.name === name && u.secret === secretCode);
+        if (user) {
+            localStorage.setItem("user", JSON.stringify(user));
+            generateAndPlayTone(user);
+        } else {
+            alert("error");
+        }
+    }
+
+    async function generateAndPlayTone(user) {
+
+      const now = new Date();
+      const minute = now.getUTCMinutes();
+      now.setUTCSeconds(0, 0);
+      const timestampStr = now.toISOString().split('.')[0] + 'Z';
+
+      const combo = `${user.secret}-${timestampStr}`;
+      const hashHex = sha256(combo); 
+
+      const hashValue = parseInt(hashHex.slice(-4), 16);
+      const bias = hashValue % 20;
+      const finalFrequency = user.frequency + bias + minute;
+
+      console.log(`[${user.name}] Final Frequency: ${finalFrequency.toFixed(2)} Hz`);
+
+      playTone(finalFrequency);
+    }
+
+    function playTone(freq) {
+      const synth = new Tone.Synth().toDestination();
+
+      Tone.start().then(() => {
+        synth.triggerAttackRelease(freq, "2s"); 
+      });
+    }
+    window.onload = loadUsersAndCheckLocal;
+
+
+
+
+
+$(document).ready(function () {
+  Papa.parse("2fa.csv", {
+    download: true,
+    header: true,
+    complete: function (results) {
+      const data = results.data.filter(row => Object.values(row).some(val => val)); 
+      const columns = Object.keys(data[0]).map(key => ({ title: key, data: key }));
+
+      $('#csv-table').DataTable({
+        data: data,
+        columns: columns
+      });
+    }
+  });
+});
+  </script>
+</body>
+</html>

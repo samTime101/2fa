@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Frequency Login</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/flowbite@3.0.0/dist/flowbite.min.css" rel="stylesheet" />
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: radial-gradient(circle at top left, #c9c4c4, #000000);
+      color: rgb(255, 255, 255);
+      font-family: Arial, sans-serif;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+      max-width: 900px;
+      height: 500px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 20px rgba(0,0,0,0.4);
+    }
+
+    .image-side {
+      width: 50%;
+    }
+
+    .image-side img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .form-side {
+      background-color: #1e1e1e;
+      padding: 40px;
+      width: 50%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px 15px;
+      margin-bottom: 15px;
+      border: none;
+      border-radius: 6px;
+      background-color: #333;
+      color: white;
+      font-size: 16px;
+    }
+
+    .btn {
+      padding: 10px 15px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      border-radius: 6px;
+    }
+
+    .btn-success {
+      background-color: #28a745;
+      color: white;
+    }
+
+    .btn-danger {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    .link-info {
+      color: #0dcaf0;
+      text-decoration: none;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .text-secondary {
+      color: #888;
+    }
+
+    .fw-bold {
+      font-weight: bold;
+    }
+
+    .mb-3 {
+      margin-bottom: 1rem;
+    }
+
+    .mb-0 {
+      margin-bottom: 0;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+        height: auto;
+      }
+
+      .image-side,
+      .form-side {
+        width: 100%;
+        height: 300px;
+      }
+
+      .form-side {
+        height: auto;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ✅ Login Section (Now properly wrapped) -->
+  <div id="login-section" class="row justify-content-center">
+    <div class="container">
+      <!-- Left: Embedded Cat Image -->
+      <div class="image-side">
+        <img src="wallhaven-439y7d.jpg" />
+      </div>
+
+      <!-- Right: Login Form -->
+      <div class="form-side">
+        <h1 class="fw-bold text-center mb-3">2FA Login</h1>
+        <input type="text" id="name" class="form-control" placeholder="Enter your name">
+        <input type="password" id="secretCode" class="form-control" placeholder="Enter secret code">
+        <button class="btn btn-success w-100 mb-3" onclick="checkSecretCode()">LOGIN</button>
+        <p class="text-center">DONT HAVE ID? <a href="./api.html" class="link-info">Create here</a></p>
+        <p class="text-center text-secondary mb-0">&copy; Samip Regmi 2025</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ Main Section (Initially Hidden) -->
+  <div id="main-section" style="display: none;">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-10 col-lg-8">
+        <div class="card bg-gray-900 border-0 shadow-lg p-4 rounded-4 mb-4">
+          <div class="alert alert-dark" role="alert" id="username"></div>
+          <div class="alert alert-dark" role="alert" id="generated_frequency">Frequency</div>
+          <div class="text-center mb-3">
+            <div id="play-icon" class="fs-1 text-primary" style="cursor: pointer; font-size: 10rem;" onclick="generateAndPlayTone(currentUser)">🔊</div>
+          </div>
+          <button class="btn btn-danger w-100" onclick="logout()">LOGOUT</button>
+        </div>
+
+        <div class="card bg-gray-900 border-0 shadow-lg p-4 rounded-4">
+          <h2 class="text-white fw-bold mb-3">Current Data</h2>
+          <div class="table-responsive">
+            <div id="table-container"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ All Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flowbite@3.0.0/dist/flowbite.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/js-sha256@0.9.0/build/sha256.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tone@next/build/Tone.js"></script>
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.2.1/js/bootstrap.bundle.min.js"></script>
+  <script src="./csv-to-html-table/js/jquery.csv.min.js"></script>
+  <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+  <script src="./csv-to-html-table/js/csv_to_html_table.js"></script>
+  <script>
+    let users = [];
+    let currentUser = null;
+    let username = document.getElementById("username");
+    async function loadUsersAndCheckLocal() {
+      try {
+        const response = await fetch('user.json');
+        users = await response.json();
+        console.log("Users loaded:", users);
+
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+          const user = JSON.parse(storedUser);
+          const match = users.find(u => u.name === user.name && u.secret === user.secret);
+          if (match) {
+            currentUser = match;
+            showMainUI();
+          } else {
+            document.getElementById("login-section").style.class = "justify-content-center";
+                      // document.getElementById("login-section").style.display = "block";
+
+          }
+        } else {
+          // document.getElementById("login-section").style.display = "block";
+                      document.getElementById("login-section").style.class = "justify-content-center";
+
+        }
+// check for admin
+        if (localStorage.getItem("user")) {
+          const user = JSON.parse(localStorage.getItem("user"));
+          if (user.name === "admin" && user.login) {
+            window.location.href = "./csv-to-html-table/index.html";
+          }
+        }
+
+
+      } catch (error) {
+        console.error('Error loading user data:', error);
+      }
+    }
+
+    function checkSecretCode() {
+      const rawName = document.getElementById("name").value;
+      const secretCode = document.getElementById("secretCode").value;
+      const name = rawName.split(' ').join('').toLowerCase();
+// for admin login
+      if (name === "admin" && secretCode === "admin123") {
+        // render the ok.html page and save the user in localStorage
+        // remove the user from   localStorage if it exists
+        localStorage.removeItem("user");
+        currentUser = { name: "admin", login: true}
+        localStorage.setItem("user", JSON.stringify(currentUser));
+        window.location.href = "./csv-to-html-table/index.html";
+        return;
+
+        
+      }
+
+// JULY 19 - for regular users
+      const user = users.find(u => u.name === name && u.secret === secretCode);
+      if (user) {
+        localStorage.setItem("user", JSON.stringify(user));
+        currentUser = user;
+        showMainUI();
+      } else {
+        alert("Invalid name or secret code!");
+      }
+    }
+
+
+
+// function showMainUI() {
+//   document.getElementById("login-section").style.display = "none";
+//   document.getElementById("main-section").style.display = "block";
+//   document.getElementById("username").innerText = `user: ${currentUser.name}`;
+
+//   $.get("./2fa.csv", function(data) {
+//     const rows = $.csv.toArrays(data);
+//     console.log(rows)
+//     const header = rows[0];
+//     const filtered = rows.filter((row, index) => {
+//       if (index === 0) return true; 
+//       return row[1].trim().toLowerCase() === currentUser.name; 
+//     });
+
+    
+//     let table = `<table class="table table-bordered table-striped"><thead><tr>`;
+//     header.forEach(h => table += `<th>${h}</th>`);
+//     table += `</tr></thead><tbody>`;
+//     for (let i = 1; i < filtered.length; i++) {
+//       table += "<tr>";
+//       filtered[i].forEach(cell => table += `<td>${cell}</td>`);
+//       table += "</tr>";
+//     }
+//     table += "</tbody></table>";
+
+//     document.getElementById("table-container").innerHTML = table;
+//     $('#table-container table').DataTable({ paging: false });
+//   });
+// }
+
+
+function showMainUI() {
+  document.getElementById("login-section").style.display = "none";
+  document.getElementById("main-section").style.display = "block";
+
+  document.getElementById("username").innerText = "user: " + currentUser.name;
+
+  $.get("./2fa.csv", function(csvData) {
+    var allRows = $.csv.toArrays(csvData);
+
+    var headerRow = allRows[0];
+
+    var filteredRows = [];
+
+    for (var i = 0; i < allRows.length; i++) {
+      var row = allRows[i];
+
+     
+      if (i === 0) {
+        filteredRows.push(row);
+      } else {
+        var nameInRow = row[1]; 
+        
+        var userName = currentUser.name;
+
+        if (nameInRow === userName) {
+          filteredRows.push(row);
+        }
+      }
+    }
+        console.log(filteredRows)
+
+
+    var htmlTable = "<table class='table table-bordered table-striped'>";
+    htmlTable += "<thead><tr>";
+    for (var i = 0; i < headerRow.length; i++) {
+      htmlTable += "<th>" + headerRow[i] + "</th>";
+    }
+    htmlTable += "</tr></thead><tbody>";
+
+    for (var i = 1; i < filteredRows.length; i++) {
+      htmlTable += "<tr>";
+      var row = filteredRows[i];
+      for (var j = 0; j < row.length; j++) {
+        htmlTable += "<td>" + row[j] + "</td>";
+      }
+      htmlTable += "</tr>";
+    }
+
+    htmlTable += "</tbody></table>";
+
+    document.getElementById("table-container").innerHTML = htmlTable;
+
+$('#table-container table').DataTable({
+  paging: false,
+  searching: false,
+  info: true,
+  ordering: true
+});
+  });
+}
+
+
+    // function showMainUI() {
+    //   document.getElementById("login-section").style.display = "none";
+    //   document.getElementById("main-section").style.display = "block";
+    //    document.getElementById("username").innerText = `user: ${currentUser.name}`
+    //   CsvToHtmlTable.init({
+    //     csv_path: "./2fa.csv",
+    //     element: "table-container",
+    //     allow_download: false,
+    //     csv_options: { separator: ",", delimiter: '"' },
+    //     datatables_options: { paging: false },
+    //     custom_formatting: [
+    //       [4, format_link]
+    //     ]
+    //   });
+    // }
+
+
+//JUly 19
+    function logout() {
+      localStorage.removeItem("user");
+      currentUser = null;
+      document.getElementById("main-section").style.display = "none";
+      // Reset the display property without affecting the Bootstrap centering classes
+      document.getElementById("login-section").style.display = "";
+      document.getElementById("login-section").className = "row justify-content-center";
+    }
+
+    function format_link(link) {
+      return link ? "<a href='" + link + "' target='_blank'>" + link + "</a>" : "";
+    }
+
+    async function generateAndPlayTone(user) {
+      const now = new Date();
+      const minute = now.getUTCMinutes();
+      now.setUTCSeconds(0, 0);
+      const timestampStr = now.toISOString().split('.')[0] + 'Z';
+
+      const combo = `${user.secret}-${timestampStr}`;
+      const hashHex = sha256(combo);
+      const hashValue = parseInt(hashHex.slice(-4), 16);
+      const bias = hashValue % 20;
+      const finalFrequency = user.frequency + bias + minute;
+
+      console.log(`[${user.name}] Final Frequency: ${finalFrequency.toFixed(2)} Hz`);
+
+      // document.getElementById("username").innerText = `Welcome, ${user.name}`;
+
+      document.getElementById("generated_frequency").innerText = `Freq: ${finalFrequency.toFixed(2)} Hz`;
+      playTone(finalFrequency);
+    }
+
+    function playTone(freq) {
+      const synth = new Tone.Synth().toDestination();
+      Tone.start().then(() => {
+        synth.triggerAttackRelease(freq, "2s");
+      });
+    }
+
+    window.onload = loadUsersAndCheckLocal;
+  </script>
+</body>
+</html>

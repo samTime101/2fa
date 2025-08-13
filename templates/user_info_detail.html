@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>User Info</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/flowbite@3.0.0/dist/flowbite.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="bg-dark text-light py-5">
+  <main>
+    <div class="container">
+      <h1 class="text-white fw-bold text-center mb-5 animated-gradient">User Information</h1>
+      
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-8 ">
+          <div class="card bg-dark border-0 shadow-lg p-3 rounded-4 text-center">
+            <!-- <img src="{{ url_for('student_id_file', filename=user.photo) }}" alt="{{ user.name }}" class="img-fluid rounded-3 mb-3" style="max-height: 400px; object-fit: cover;"> -->
+             <img src="{{ url_for('student_id_file', filename=user.photo) }}" 
+     alt="{{ user.name }}" 
+     class="img-fluid rounded-6 mb-3" 
+     style="max-height: 400px; width: auto; object-fit: contain;">
+
+            <h5 class="fw-bold">{{ user.name }}</h5>
+            
+            <p class="mb-1"><strong>Email:</strong> {{ user.email if user.email != "NULL" else "N/A" }}</p>
+            <p class="mb-1"><strong>Frequency:</strong> {{ user.frequency }}</p>
+                <!--Button to AI analysis -->
+                <div class="d-flex justify-content-center mb-3">
+
+                  <button class="btn btn-outline-light w-25" id="aiAnalysisButton">AI Analyse</i></button>
+                  <button class="btn btn-outline-light w-25 ms-2" id="attendanceChartButton"><i class="fa-solid fa-chart-column"></i></button>
+                </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row justify-content-center mt-4" hidden>
+        <div class="col-12 col-md-8">
+          <div class="card bg-dark border-0 shadow-lg p-3 rounded-4 mb-4">
+            <h3 class="text-center mb-3">AI Analysis</h3>
+            <p class="text-center"></p>
+          </div>
+        </div> 
+      </div>
+
+      <div class="row justify-content-center mt-4" id="attendanceOverview" hidden>
+        <div class="col-12 col-md-8">
+          <div class="card bg-dark border-0 shadow-lg p-3 rounded-4 mb-4">
+            <h3 class="text-center mb-3">Attendance Overview</h3>
+            <canvas id="attendanceChart" width="400" height="200"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="row justify-content-center mt-4">
+        <div class="col-12 col-md-8">
+          <div class="card bg-dark border-0 shadow-lg p-3 rounded-4 mb-4">
+            <h3 class="text-center mb-3">Present Information</h3>
+            <p class="text-center">Number of Present Days: {{ present_info|length }}</p>
+            {% if present_info %}
+              <ul class="list-group list-group-flush">
+                {% for info in present_info %}
+                  <li class="list-group-item bg-grey text-light d-flex justify-content-between align-items-center">
+                    <span>{{ info.date }} - {{ info.timestamp }}</span>
+                    <span class="badge bg-success">Present</span>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="text-center text-muted">No present information available</p>
+            {% endif %}
+          </div>
+
+          <div class="card bg-dark border-0 shadow-lg p-3 rounded-4">
+            <h3 class="text-center mb-3">Absent Information</h3>
+            <p class="text-center">Number of Absent Days: {{ absent_info|length }}</p>
+            {% if absent_info %}
+              <ul class="list-group list-group-flush">
+                {% for date in absent_info %}
+                  <li class="list-group-item bg-grey text-light d-flex justify-content-between align-items-center">
+                    <span>{{ date }}</span>
+                    <span class="badge bg-danger">Absent</span>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="text-center text-muted">No absent information available.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="bg-dark text-light py-4 mt-5 border-top border-secondary">
+    <div class="container text-center">
+      <p class="mb-1">&copy; 2025 <strong>2FA Systems</strong>. All rights reserved.</p>
+    </div>
+  </footer>
+  <!-- DIRECT FLASK BATA AYERA BAIRA KO JS BHANDA MATHI HUNUPARXA -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+  const presentDates = {{ present_info | map(attribute='date') | list | tojson }};
+  const absentDates = {{ absent_info | tojson }};
+  var username = "{{ user.name }}";
+
+</script>
+<script src="{{ url_for('static', filename='js/user_info_detail.js') }}"></script>
+
+</body>
+</html>
