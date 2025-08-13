@@ -1,4 +1,0 @@
-name: Samip Regmi
-collegename: BIRATNAGAR INTERNATIONAL COLLEGE
-studentid: NP02CS4A240105
-stream: Computer Science

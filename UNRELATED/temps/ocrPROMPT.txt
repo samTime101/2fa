@@ -1,7 +1,0 @@
-return format
-no need to write in json write in normal text
-name: return student name
-collegename:return collegename
-studentid:return student id number starting with NP
-stream:return stream
-no need to send anything more
