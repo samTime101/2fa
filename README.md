@@ -132,6 +132,9 @@ base_frequency + sha_bias + now.minute
     - `<file>`: Available 2FA or `<date>`
     - `ask`: Calls Gemini API with access to `2fa.csv` and `user.json`, and answers related queries
     - `mark`: Marks attendance for specified user using `user['email']` and sends an OTP code
+    - `check` : Checks if you are present today or not
+    - `msee` : Lists recent messages on Server
+    - `msend` : Sends Admin messages to Server
 
 ---
 

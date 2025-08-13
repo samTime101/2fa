@@ -181,7 +181,7 @@ def handle_user_connection(connection: socket.socket, address: str) -> None:
                     elif decoded.lower() == '2fa':
                         connection.send(f"\n-----\n[*] FROM 2FA \n{readfile(decoded)}\n-----\n".encode())
                     elif decoded.lower() == 'help':
-                        connection.send("\n----------\nFROM 2FA > made by 2FA systems 2025\n1. 2fa - list data of 2fa.csv\n2. <date> - list attendence of that particular date\n3. ask - ask queries to AI related to attendence\n4. mark <email> - mark attendance for a user\n5. msee - list all messages\n6. help - show this help message\n7. exit".encode())
+                        connection.send("\n----------\nFROM 2FA > made by 2FA systems 2025\n1. 2fa - list data of 2fa.csv\n2. <date> - list attendence of that particular date\n3. ask - ask queries to AI related to attendence\n4. mark <email> - mark attendance for a user\n5. msee - list all messages\n6. help - show this help message\n7. check - shows if you are present or absent today\n8. exit  - you know what this does dont you lol".encode())
                     elif decoded.lower() == 'ask':
                         connection.send("ASK::".encode())     
                         query = f"Qurey:{connection.recv(1024).decode().strip()}\nusername of person giving you query:{user_username}"
@@ -208,13 +208,20 @@ def handle_user_connection(connection: socket.socket, address: str) -> None:
                         if user_username == 'samipregmi' or user_username == 'nayannembang' or user_username == 'rajubhetwal':
                             msg_txt=connection.recv(1024).decode().strip()
                             if msg_txt:
-                                full_msg=f"{user_username} > {msg_txt}"
+                                full_msg=f"ADMIN->{user_username} > {msg_txt}"
                                 messages.append(full_msg)
                                 connection.send(b"Message sent.\n")
                             else:
                                 connection.send(b"Empty message not sent.\n")
                         else:
                             connection.send(b"Only admins can send messages.\n")
+                    elif decoded.lower() == 'check':
+                        df = pd.read_csv('2fa.csv')
+                        exists = ((df['name'] == user_username) & (df['date'] == today_date)).any()
+                        if exists:
+                            connection.send(b"Attendance already marked for today.\n")
+                        else:
+                            connection.send(b"Attendance not marked for today.\nUse mark to mark attendance.\n")
                     elif decoded.lower() == "mark":
                         email = current_user['email']
                         df = pd.read_csv('2fa.csv')
