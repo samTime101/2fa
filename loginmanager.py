@@ -570,5 +570,9 @@ def user_socket():
 def favicon():
     return send_file(os.path.join(app.root_path, 'static', 'favicon.ico'), mimetype='image/vnd.microsoft.icon')
 
+@app.route('/2fa.png')
+def two_fa_image():
+    return send_file(os.path.join(app.root_path, 'static', '2fa.png'), mimetype='image/png')
+
 if __name__ == '__main__':
     socketio.run(app, debug=True, port=5800, host='0.0.0.0')

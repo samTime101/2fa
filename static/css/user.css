@@ -38,15 +38,16 @@
       background-position: 0% 50%;
     }
   } */
-img{
+#user-photo{
   width: 150px;
    height: 150px;
     object-fit: cover; 
     border: 3px solid #555;
 }
 
+
       @media (max-width: 576px) {
-        img{
+        #user-photo {
           width:100px;
           height:100px;
         }

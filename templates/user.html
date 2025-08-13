@@ -22,7 +22,7 @@
           <div class="card bg-gray-900 border-0 shadow-lg p-4 rounded-4 mb-4">
             <div id="welcome"></div>
 <img src="{{ url_for('student_id_file', filename=user_photo.photo) }}" 
-     class="rounded-circle mb-3 d-block mx-auto outline-light" >
+     class="rounded-circle mb-3 d-block mx-auto outline-light" id="user-photo">
 
           </div>
           <!-- -------------------------------- -->
@@ -53,6 +53,31 @@
       </div>
     </div>
   </div>
+<div class="modal fade" id="github101Modal" tabindex="-1" aria-labelledby="github101ModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark text-light border-0 rounded-4 shadow-lg">
+      <div class="modal-header border-0 bg-dark py-3">
+        <h5 class="modal-title fw-bold text-light" id="github101ModalLabel">Welcome to 2FA Systems</h5>
+        <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4 text-center">
+        <p class="text-secondary mb-4">This is a stall for AI. We are 2FA Systems, where we have made an Authentication system integrated with Record Keeping Attendece system</p>
+<div class="d-flex justify-content-center align-items-center mb-4">
+  <img src="{{ url_for('static', filename='2fa.png') }}" class="rounded-2 border-0 me-3" style="height: 60px; width: 60px;">
+  <img src="https://bicnepal.edu.np/images/logo.svg" 
+       class="rounded-2 border-0" 
+       style="height: 60px;" id="bic-logo">
+</div>
+
+        <p class="fs-4 fw-bold mb-2">Enjoy your time at <span class="text-info">BIC</span> </p>
+      </div>
+      <div class="modal-footer border-0 d-flex justify-content-between py-3">
+        <p class="mb-0 text-secondary"><small>Yours truly: <span class="fw-bold text-light">2FA Systems</span></small></p>
+      </div>
+    </div>
+  </div>
+</div>
+
 
   <footer class="bg-dark text-light py-4 mt-5 border-top border-secondary">
     <div class="container text-center">
@@ -75,7 +100,6 @@
   <script src="https://cdn.jsdelivr.net/npm/js-sha256@0.9.0/build/sha256.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tone@next/build/Tone.js"></script>
   <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.2.1/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
   <script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
     <script src="{{ url_for('static', filename='js/csv_to_html_table.js') }}"></script>
@@ -86,6 +110,12 @@
     secret: "{{ user.secret }}",
     frequency: {{ user.frequency }}
   };
+document.addEventListener('DOMContentLoaded', () => {
+    const githubModal = new bootstrap.Modal(document.getElementById('github101Modal'));
+    githubModal.show();
+});
+
+
   </script>
   <script src="{{ url_for('static', filename='js/user.js') }}"></script>
 </body>

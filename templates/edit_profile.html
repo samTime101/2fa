@@ -15,7 +15,7 @@
       <div class="col-12 col-md-8 col-lg-6">
 
         <div class="card bg-dark border-0 shadow-lg p-4 rounded-4 mb-4 text-center">
-          <h4 class="mb-3">Profile Information</h4>
+          <h4 class="mb-3">2FA Profile</h4>
           {% if user.photo %}
 <img id="preview" src="{{ url_for('student_id_file', filename=user.photo) if user.photo else 'https://via.placeholder.com/150?text=No+Photo' }}"
      class="img-fluid rounded-circle border border-3 border-secondary mx-auto mb-3"
