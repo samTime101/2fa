@@ -31,7 +31,7 @@
               <div class="mb-3">
                 <input type="email" id="Email" class="form-control rounded-4" placeholder="Email?" required />
               </div>
-              <label class="text-light mb-3">Upload/Take Photo</label>
+              <label class="text-light mb-3">Upload Photo</label>
               <input type="file" id="photo" accept="image/*" class="form-control mb-3 rounded-4" />
               <p>or</p>
               <div class="d-flex justify-content-center gap-3 mb-3 flex-wrap">
@@ -57,6 +57,31 @@
       </div>
     </div>
   </div>
+<div class="modal fade" id="signupWarningModal" tabindex="-1" aria-labelledby="signupWarningModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-grey text-light border-0 rounded-4 shadow-lg">
+      <div class="modal-header border-0 bg-grey py-3">
+        <h6 class="modal-title fw-bold text-light" id="signupWarningModalLabel">
+          ⚠ Important Signup Instructions
+        </h6>
+        <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <ul class="mb-0">
+          <li>Fill in <strong>all fields</strong>.</li>
+          <li>Use a <strong>username without spaces</strong> in <strong>lowercase</strong> only.</li>
+          <li>Upload a <strong>clear and good quality photo</strong>.Either upload or take a picture</li>
+          <li>Use your <strong>correct email address</strong>.Your Email will be used.</li>
+        </ul>
+      </div>
+      <div class="modal-footer border-0 py-3 d-flex justify-content-between align-items-center">
+        <p class="mb-0 text-secondary"><small>Yours truly: <span class="fw-bold text-light">2FA Systems</span></small></p>
+        <button type="button" class="btn btn-light text-grey" data-bs-dismiss="modal">Got it!</button>
+      </div>
+    </div>
+  </div>
+</div>
+
   <footer class="bg-dark text-light py-4 mt-5 border-top border-secondary">
   <div class="container text-center">
     <p class="mb-1">&copy; 2025 <strong>2FA Systems</strong>. All rights reserved.</p>
@@ -74,7 +99,13 @@
   <!-- <footer class="text-center mt-4 text-muted">
     <p>July 15 - Remote Save</p>
   </footer> -->
-
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+    const signupWarningModal = new bootstrap.Modal(document.getElementById('signupWarningModal'));
+    signupWarningModal.show();
+});
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/js-sha256@0.9.0/build/sha256.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tone@next/build/Tone.js"></script>
   <script src="{{url_for('static', filename='js/signup.js')}}"></script>
