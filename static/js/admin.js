@@ -68,8 +68,15 @@ const csvPath = `/csv/${dateStr}.csv`;
       }
     });
 
-    window.onload = function () {
-      const today = new Date().toISOString().slice(0, 10);
-      document.getElementById("datePicker").value = today;
-      loadCSV(today);
-    };
+    // window.onload = function () {
+    //   const today = new Date().toISOString().slice(0, 10);
+    //   alert(today )
+    //   document.getElementById("datePicker").value = today;
+    //   loadCSV(today);
+    // };
+window.onload = function () {
+  const today = new Date();
+  const formattedToday = today.toLocaleDateString('en-CA'); 
+  document.getElementById("datePicker").value = formattedToday;
+  loadCSV(formattedToday);
+};

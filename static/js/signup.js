@@ -51,6 +51,7 @@
 
     document.getElementById('userForm').addEventListener('submit', async function (e ) {
       e.preventDefault();
+      document.getElementById('status').innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> `;
       const username = document.getElementById('username').value;
       const secret_code = document.getElementById('secret').value;
       const email = document.getElementById('Email').value; 
