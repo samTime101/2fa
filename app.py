@@ -8,7 +8,7 @@
 # JULY 17 GRAPHHHHHHH
 
 
-
+import pickle
 from flask import Flask, request, jsonify, render_template
 from deepface import DeepFace
 from werkzeug.utils import secure_filename
@@ -138,25 +138,42 @@ def save_base64_image(base64_string, filename):
 #     return None
 
 
-def to_model(test_image_path="./uploads/temp.png", known_faces_folder="student_id"):
-    '''
-    function: to_model
-    returns : detected face name
-    '''
+# def to_model(test_image_path="./uploads/temp.png", known_faces_folder="student_id"):
+#     '''
+#     function: to_model
+#     returns : detected face name
+#     '''
+#     try:
+#         print('----------using----------------')
+#         known_faces = os.listdir(known_faces_folder)
+#         print(f"Known faces in folder '{known_faces_folder}': {known_faces}")
+#         result = DeepFace.find(img_path=test_image_path, db_path=known_faces_folder, model_name="SFace")
+#         print(f'\n--------------{result}---------------\n')
+#         if len(result) > 0 and len(result[0]) > 0:
+#             identity_path = result[0].iloc[0]['identity']
+#             name = os.path.splitext(os.path.basename(identity_path))[0]
+#             return name
+#         else:
+#             return None
+#     except Exception as e:
+#         print(f"Error in face recognition: {e}")
+#         return None
+
+
+
+def to_model(test_image_path = "uploads/temp.png"):
+    print('-----------------USING MODEL-----------------')
+    clf = pickle.load(open("deepface_svm.pkl", "rb"))
+    le = pickle.load(open("label_encoder.pkl", "rb"))
     try:
-        print('----------using----------------')
-        known_faces = os.listdir(known_faces_folder)
-        print(f"Known faces in folder '{known_faces_folder}': {known_faces}")
-        result = DeepFace.find(img_path=test_image_path, db_path=known_faces_folder, model_name="SFace")
-        print(f'\n--------------{result}---------------\n')
-        if len(result) > 0 and len(result[0]) > 0:
-            identity_path = result[0].iloc[0]['identity']
-            name = os.path.splitext(os.path.basename(identity_path))[0]
-            return name
-        else:
-            return None
+        embedding = DeepFace.represent(img_path=test_image_path, model_name='Facenet')[0]["embedding"]
+        
+        pred = clf.predict([embedding])
+        name = le.inverse_transform(pred)[0]
+        print(f"MODEL RECOGNIZED: {name}")
+        return name
     except Exception as e:
-        print(f"Error in face recognition: {e}")
+        print(f"Error in recognition: {e}")
         return None
 
 @app.route('/')
@@ -184,9 +201,9 @@ def detect():
 
     filename = secure_filename("temp.png")
     image_path = save_base64_image(image_b64, filename)
-
-    name_face = to_model()
-
+    print(f"Image saved at: {image_path}")
+    # name_face = to_model()
+    print("Running face recognition...")
     
     peak_freq = float(frequency)
 
@@ -237,5 +254,29 @@ def get_users():
         users = json.load(f)
     return jsonify(users), 200
         
+
+@app.route('/recognize', methods=['POST'])
+def recognize():
+    data = request.get_json()
+    if not data or 'photo' not in data:
+        return jsonify({'error': 'No photo provided'}), 400
+
+    photo_base64 = data['photo']
+    photo_path = os.path.join(UPLOAD_FOLDER, "temp.png")
+
+    try:
+        with open(photo_path, "wb") as f:
+            f.write(base64.b64decode(photo_base64))
+        
+        name = to_model(photo_path)
+
+        return jsonify({'name': name})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+
+@app.route('/user_model_test', methods=['GET'])
+def user_model_test():
+    return render_template('user_model_test.html')
 if __name__ == '__main__':
     app.run(debug=True , port = 5500 , host="0.0.0.0")

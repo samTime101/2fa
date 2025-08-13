@@ -59,7 +59,7 @@
       // auto capture
         setTimeout(function() {
         captureBtn.click();
-      }, 2000);
+      }, 3000);
       
         // document.getElementById('detect').style.display = 'block'
         preview.style.display = "none";
