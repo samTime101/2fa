@@ -19,6 +19,8 @@ ADMIN_SECRET = os.getenv('ADMIN_SECRET')
 app = Flask(__name__)
 app.secret_key = 'admin'  
 from flask_cors import CORS
+import base64
+
 import csv
 CORS(app)
 
@@ -75,7 +77,6 @@ def signup():
         if user['name'] == name or user['secret'] == secret:
             return jsonify({'error': 'User already exists'}), 400
 
-    import base64
     student_id_folder = './student_id'
     os.makedirs(student_id_folder, exist_ok=True)
     photo_path = os.path.join(student_id_folder, f"{name}.png")
@@ -155,8 +156,29 @@ def admin_dashboard():
 def user_dashboard():
     if 'user' not in session or session['user']['role'] != 'user':
         return redirect(url_for('login'))
+    with open('user.json', 'r') as f:
+        users = json.load(f)
+
+    user = None
+    for u in users:
+        if u['name'] == session['user']['name']:
+            user = u
+            break
+
+    if not user:
+        return render_template('404.html'), 404
+
+    # Check if photo exists
+    user['photo'] = None
+    for ext in ['.png', '.jpeg', '.jpg']:
+        img_path = os.path.join(STUDENT_ID_FOLDER, user['name'] + ext)
+        if os.path.exists(img_path):
+            user['photo'] = user['name'] + ext
+            break
     print(session['user'])
-    return render_template('user.html', user=session['user'])
+    return render_template('user.html', user=session['user'] , user_photo = user)
+
+            
 
 @app.route('/logout')
 def logout():
@@ -305,8 +327,8 @@ STUDENT_ID_FOLDER = os.path.join(os.getcwd(), 'student_id')
 @app.route('/student_id/<filename>')
 def student_id_file(filename):
     # make it only accessible to admin
-    if 'user' not in session or session['user']['role'] != 'admin':
-        return redirect(url_for('login'))
+    # if 'user' not in session or session['user']['role'] != 'admin':
+    #     return redirect(url_for('login'))
     return send_from_directory(STUDENT_ID_FOLDER, filename)
 
 @app.route('/admin/user_info', methods=['GET'])
@@ -393,6 +415,61 @@ def admin_user_info_analysis():
     ai_analysis = to_analysis_model(f"Analyze the attendance data for {username} and provide feedback.", present_info=present_info, absent_info=absent_info)
     return jsonify({'analysis': ai_analysis})
 
+
+# ALLOW USER TO EDIT THEIR PROFILE PHOTO
+@app.route('/user/edit_profile', methods=['POST', 'GET'])
+def edit_profile():
+    print(f"session username: {session['user']['name']}")
+    if 'user' not in session or session['user']['role'] != 'user':
+        return redirect(url_for('login'))
+
+    if request.method == 'GET':
+        with open('user.json', 'r') as f:
+            users = json.load(f)
+
+        user = None
+        for u in users:
+            if u['name'] == session['user']['name']:
+                user = u
+                break
+
+        if not user:
+            return render_template('404.html'), 404
+
+        # Check if photo exists
+        user['photo'] = None
+        for ext in ['.png', '.jpeg', '.jpg']:
+            img_path = os.path.join(STUDENT_ID_FOLDER, user['name'] + ext)
+            if os.path.exists(img_path):
+                user['photo'] = user['name'] + ext
+                break
+
+        return render_template('edit_profile.html', user=user)
+
+
+    if request.method == 'POST':
+        # SAVE THE CURRENT PHOTO
+        data = request.get_json()
+        if not data or 'photo' not in data:
+            return jsonify({'error': 'No photo data provided'}), 400
+
+        photo_base64 = data.get('photo')
+        if not photo_base64:
+            return jsonify({'error': 'Photo data is empty'}), 400
+
+        student_id_folder = './student_id'
+        os.makedirs(student_id_folder, exist_ok=True)
+        photo_path = os.path.join(student_id_folder, f"{session['user']['name']}.png")
+
+        try:
+            with open(photo_path, "wb") as f:
+                f.write(base64.b64decode(photo_base64))
+        except Exception as e:
+            return jsonify({'error': f'Failed to save photo: {e}'}), 500
+
+        return jsonify({'success': 'Profile photo updated successfully!'}), 200
+
+        
 
 # ADDED ON AUG 11, 2025
 
