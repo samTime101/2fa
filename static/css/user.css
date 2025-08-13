@@ -50,4 +50,7 @@ img{
           width:100px;
           height:100px;
         }
+        .fa-solid.fa-circle-play {
+          font-size: 3rem;
+        }
     }

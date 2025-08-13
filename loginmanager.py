@@ -20,7 +20,8 @@ app = Flask(__name__)
 app.secret_key = 'admin'  
 from flask_cors import CORS
 import base64
-
+from io import BytesIO
+from PIL import Image
 import csv
 CORS(app)
 
@@ -314,6 +315,7 @@ def admin_attendance_update():
         image_path = os.path.join(app.root_path, 'image_logs', f"{date}_{name}.png")
         if os.path.exists(image_path):
             os.remove(image_path)
+        ReportWrite.save_to_sql(att_date=date)
     ReportWrite.report(attendance_date=date)
     ReportWrite.save_to_sql(att_date=date)
     return redirect(url_for('admin_attendance'))
@@ -417,59 +419,58 @@ def admin_user_info_analysis():
 
 
 # ALLOW USER TO EDIT THEIR PROFILE PHOTO
-@app.route('/user/edit_profile', methods=['POST', 'GET'])
+@app.route('/user/edit_profile', methods=['GET', 'POST'])
 def edit_profile():
-    print(f"session username: {session['user']['name']}")
     if 'user' not in session or session['user']['role'] != 'user':
         return redirect(url_for('login'))
 
+    with open('user.json', 'r') as f:
+        users = json.load(f)
+
+    current_user = next((u for u in users if u['name'] == session['user']['name']), None)
+    if not current_user:
+        return render_template('404.html'), 404
+
     if request.method == 'GET':
-        with open('user.json', 'r') as f:
-            users = json.load(f)
-
-        user = None
-        for u in users:
-            if u['name'] == session['user']['name']:
-                user = u
-                break
-
-        if not user:
-            return render_template('404.html'), 404
-
-        # Check if photo exists
-        user['photo'] = None
-        for ext in ['.png', '.jpeg', '.jpg']:
-            img_path = os.path.join(STUDENT_ID_FOLDER, user['name'] + ext)
+        current_user['photo'] = None
+        for ext in ['.png', '.jpg', '.jpeg']:
+            img_path = os.path.join(STUDENT_ID_FOLDER, current_user['name'] + ext)
             if os.path.exists(img_path):
-                user['photo'] = user['name'] + ext
+                current_user['photo'] = current_user['name'] + ext
                 break
+        return render_template('edit_profile.html', user=current_user)
 
-        return render_template('edit_profile.html', user=user)
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'No data provided'}), 400
 
+    updated_email = data.get('email', '').strip()
+    photo_base64 = data.get('photo', '').strip()
 
-    if request.method == 'POST':
-        # SAVE THE CURRENT PHOTO
-        data = request.get_json()
-        if not data or 'photo' not in data:
-            return jsonify({'error': 'No photo data provided'}), 400
+    if updated_email:
+        if any(u['email'] == updated_email and u['name'] != current_user['name'] for u in users):
+            return jsonify({'error': 'Email already in use'}), 400
+        current_user['email'] = updated_email
+        session['user']['email'] = updated_email
 
-        photo_base64 = data.get('photo')
-        if not photo_base64:
-            return jsonify({'error': 'Photo data is empty'}), 400
+    if photo_base64:
 
-        student_id_folder = './student_id'
-        os.makedirs(student_id_folder, exist_ok=True)
-        photo_path = os.path.join(student_id_folder, f"{session['user']['name']}.png")
 
         try:
-            with open(photo_path, "wb") as f:
-                f.write(base64.b64decode(photo_base64))
+            header, encoded = photo_base64.split(',', 1)
+            img_data = base64.b64decode(encoded)
+            img = Image.open(BytesIO(img_data))
+            ext = 'png'
+            save_path = os.path.join(STUDENT_ID_FOLDER, current_user['name'] + '.' + ext)
+            img.save(save_path)
         except Exception as e:
-            return jsonify({'error': f'Failed to save photo: {e}'}), 500
+            return jsonify({'error': f'Failed to save photo: {str(e)}'}), 500
 
-        return jsonify({'success': 'Profile photo updated successfully!'}), 200
+    with open('user.json', 'w') as f:
+        json.dump(users, f, indent=2)
 
-        
+    return jsonify({'success': True, 'email': updated_email if updated_email else current_user['email']})
+
 
 # ADDED ON AUG 11, 2025
 
