@@ -167,7 +167,7 @@ def handle_user_connection(connection: socket.socket, address: str) -> None:
         # ramro dekhinxa cool :) :) :)
         command_counter = int(0)
         while True:
-
+                users = read_json()
                 connection.send(f"[{command_counter}][{user_username}]@2FA :".encode())
                 msg = connection.recv(1024)
                 command_counter += 1
@@ -223,6 +223,7 @@ def handle_user_connection(connection: socket.socket, address: str) -> None:
                         else:
                             connection.send(b"Attendance not marked for today.\nUse mark to mark attendance.\n")
                     elif decoded.lower() == "mark":
+                        users = read_json()
                         email = current_user['email']
                         df = pd.read_csv('2fa.csv')
                         # connection.send(b"Enter Email to receive OTP: ")

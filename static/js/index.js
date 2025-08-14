@@ -95,79 +95,58 @@
     });
 
 // SUBMISSION --------------------------------------------------------------------------------------
-    document.getElementById('userForm').addEventListener('submit', async function (e) {
-      e.preventDefault();
+document.getElementById('userForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
 
-      if (!base64Photo) {
-        statusBox.innerText = "photo not detected , maybe no frequency !!!!!!!!";
+    if (!base64Photo || detected_frequency == null || isNaN(parseFloat(detected_frequency))) {
+        statusBox.innerText = "Photo or frequency not detected!";
         return;
-      }
+    }
 
-      statusBox.innerText = "processing....";
+    statusBox.innerText = "Processing...";
+    statusBox.className = 'alert alert-dark text-center';
+    statusBox.style.display = 'block';
+    // console.log(base64Photo, detected_frequency);
 
-
-      // SENDING POST REQUEST
-      try {
-        const response = await fetch(`/detect`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            image: base64Photo,
-            frequency: detected_frequency
-          })
+    try {
+        const response = await fetch('/detect', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                image: base64Photo,
+                frequency: parseFloat(detected_frequency)
+            })
         });
-const result = await response.json();
 
-// wait for 3 seconds before resuming scan
+        const result = await response.json();
+        console.log("Detection result:", result);
 
-console.log("Detection result:", result);
-//CHANGED THIS-------------
-statusBox.className = 'alert alert-dark text-center';
-statusBox.style.display = 'block';
-//--------------
-statusBox.innerText = `RESULT: ${result.status} [${result.name}]`;
-// alert(`Detected user: ${result.name}\nStatus: ${result.status}`);
+        statusBox.innerText = `RESULT: ${result.status} [${result.name}]`;
 
-// ---------------------_ADDED SET TIME OUT
-setTimeout( async () => {
-  statusBox.classList.remove('alert', 'alert-dark', 'text-center');
-if (video.srcObject) {
-  video.srcObject.getTracks().forEach(track => track.stop());
-  video.srcObject = null;
-}
-video.style.display = "none";
-captureBtn.style.display = "none";
-document.getElementById('detect').style.display = 'none'
+        setTimeout(async () => {
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+            }
+            video.style.display = "none";
+            captureBtn.style.display = "none";
+            document.getElementById('detect').style.display = 'none';
+            preview.style.display = "none";
+            base64Photo = "";
 
-preview.style.display = "none";
-base64Photo = "";
+            start_scanning = true;
+            startScanningBtn.innerText = "Stop Scanning";
+            statusBox.innerText = "Resuming scan...";
+            await detect_frequency_continuous();
+        }, 3000);
 
-    start_scanning = true;
-    startScanningBtn.innerText = "Stop Scanning";
-    statusBox.innerText = "Resuming scan...";
-    await detect_frequency_continuous();
-}, 3000);
-// ---------------------WITH ALERT BELOW
-// if (video.srcObject) {
-//   video.srcObject.getTracks().forEach(track => track.stop());
-//   video.srcObject = null;
-// }
-// video.style.display = "none";
-// captureBtn.style.display = "none";
-// document.getElementById('detect').style.display = 'none'
-
-// preview.style.display = "none";
-// base64Photo = "";
-
-//     start_scanning = true;
-//     startScanningBtn.innerText = "Stop Scanning";
-//     statusBox.innerText = "Resuming scan...";
-//     await detect_frequency_continuous();
-      } catch (err) {
+    } catch (err) {
         console.error(err);
+        statusBox.className = 'alert alert-danger text-center';
         statusBox.innerText = "Failed to connect to backend.";
-      }
-    });
+    }
+});
+
 
 
     // ---------------------------------------------------------------------------------

@@ -474,8 +474,8 @@ def edit_profile():
 
 # ADDED ON AUG 11, 2025
 
-TCP_HOST = 'localhost'
-TCP_PORT = 12000
+TCP_HOST = '0.tcp.in.ngrok.io'
+TCP_PORT = 11941
 print(f"socket: {TCP_HOST}:{TCP_PORT}")
 socketio = SocketIO(app)
 user_tcp_conns = {} 

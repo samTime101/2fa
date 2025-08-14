@@ -80,6 +80,8 @@ def write_data(name , timestamp = datetime.datetime.now().isoformat() ,today = d
     '''
     # global timestamp
     print('....write _data ----')
+    with open(json_file_path, 'r') as f:
+        users = json.load(f)
     try:
         
         csv_file_path = '2fa.csv'
@@ -237,7 +239,8 @@ def save_to_remote_save_image(person):
 
     
 def save_to_sql(att_date = attendance_date) :
-
+    with open(json_file_path, 'r') as f:
+        users = json.load(f)
     table_name = att_date.replace('-','_')
     conn = mysql.connector.connect(
     host="localhost",

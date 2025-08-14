@@ -59,7 +59,7 @@ def add_security_headers(response):
 # def send_attendance_email(to_email, name):
 #     try:
 #         msg = Message(
-#             subject="Attendance Marked ✅",
+#             subject="Attendance Marked",
 #             recipients=[to_email],
 #             body=f"Hi {name}, your attendance was successfully marked at {datetime.now().strftime('%H:%M:%S on %Y-%m-%d')}."
 #         )
@@ -182,65 +182,44 @@ def index():
 
 @app.route('/detect', methods=['POST'])
 def detect():
-    data = request.get_json()
+    data = request.get_json(silent=True)
+
+    if not data:
+        return jsonify({"status": "No JSON received"}), 400
+
     image_b64 = data.get("image")
     frequency = data.get("frequency")
 
-    print("-------------------------------------")
-
-    print("frequency:", frequency)
-
-    print("dynamic frequency for all users:")
-    for user in users:
-        dynamic_freq = generate_dynamic_frequency(user)
-        print(f"{user['name']}: {dynamic_freq}")
-
-
     if not image_b64 or frequency is None:
-        return jsonify({"status": " Missing data", "name": ""}), 400
+        return jsonify({"status": "Missing data", "name": ""}), 400
 
-    filename = secure_filename("temp.png")
-    image_path = save_base64_image(image_b64, filename)
-    print(f"Image saved at: {image_path}")
-    # name_face = to_model()
+    try:
+        peak_freq = float(frequency)
+    except ValueError:
+        return jsonify({"status": "Invalid frequency", "name": ""}), 400
+
+    photo_path = os.path.join(UPLOAD_FOLDER, "temp.png")
+    with open(photo_path, "wb") as f:
+        f.write(base64.b64decode(image_b64))
+
     print("Running face recognition...")
-    
-    peak_freq = float(frequency)
-
     for user_data in users:
         expected_freq = generate_dynamic_frequency(user_data)
-        #receiver_mail = f"{user_data['secrect']}@bicnepal.edu.np"
-        # print(f"Expected frequency for {user_data['name']}: {expected_freq:.2f} Hz")
-        if abs(peak_freq - expected_freq) <= tolerance and to_model() == user_data["name"]:
+        print(f"expected_freq: {expected_freq}, peak_freq: {peak_freq}, tolerance: {tolerance}")
+        if abs(peak_freq - expected_freq) <= tolerance and to_model(photo_path) == user_data['name']:
             print(f"Match found for {user_data['name']}!")
 
             if ReportWrite.write_data(user_data['name']) == 100:
                 print(f"Attendance marked for {user_data['name']}")
                 ReportWrite.report()
-                threading.Thread(target = ReportWrite.save_image_locally, args=(user_data['name'],)).start()
-                # threading.Thread(target = ReportWrite.save_data_remote).start()
-                # threading.Thread(target = ReportWrite.save_to_github, args = (user_data['name'],) ).start()
-                # threading.Thread(target = ReportWrite.save_to_remote_save_image, args = (user_data['name'],) ).start()
-                threading.Thread(target = ReportWrite.save_to_sql()).start()
-                # threading.Thread(target = graph.make_graph).start()
-                # threading.Thread(target = send_attendance_email, args = (user_data['email'], receiver_mail) ).start()
-
-                # ReportWrite.report()
-                # ReportWrite.save_data_remote()
+                threading.Thread(target=ReportWrite.save_image_locally, args=(user_data['name'],)).start()
+                threading.Thread(target=ReportWrite.save_to_sql).start()
                 return jsonify({"status": "Attendance marked", "name": user_data['name']}), 200
             else:
                 print(f"Attendance already marked for {user_data['name']}")
                 ReportWrite.report()
-                # threading.Thread(target = ReportWrite.save_data_remote).start()
-                # threading.Thread(target = ReportWrite.save_to_github, args = (user_data['name'],) ).start()
-                # threading.Thread(target = ReportWrite.save_to_remote_save_image, args = (user_data['name'],) ).start()
-                threading.Thread(target = ReportWrite.save_to_sql()).start()
-                # threading.Thread(target = graph.make_graph).start()
-
-
-
-                # ReportWrite.save_data_remote()
-                return jsonify({"status": "DONE Attendance already marked", "name": user_data['name']}), 200
+                threading.Thread(target=ReportWrite.save_to_sql).start()
+                return jsonify({"status": "Attendance already marked", "name": user_data['name']}), 200
 
     print("No match found — possibly spoofed or expired.")
     return jsonify({"status": "No match found", "name": ""}), 400
